@@ -60,10 +60,10 @@ const SignupScreen = () => {
           onChangeText={setFullname}
         />
 
-        <Text style={styles.label}>Email Address</Text>
+        <Text style={styles.label}>User name</Text>
         <TextInput 
           style={styles.input} 
-          placeholder="john@gmail.com" 
+          placeholder="john_doe" 
           autoCapitalize="none"
           value={username}
           onChangeText={setUsername}
