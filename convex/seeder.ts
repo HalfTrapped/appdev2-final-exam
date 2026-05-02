@@ -19,6 +19,7 @@ export const seed = mutation({
       userId = await ctx.db.insert("users", {
         username: "testuser",
         password: hashedPassword,
+        fullname: "Test User"
       });
     }
     

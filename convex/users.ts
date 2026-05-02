@@ -47,7 +47,8 @@ export const register = mutation({
 
         const userId = ctx.db.insert("users", {
             username: args.username,
-            password: hashedPassword
+            password: hashedPassword,
+            fullname: args.username 
         });
 
         return userId;
