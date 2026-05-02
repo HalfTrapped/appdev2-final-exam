@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -9,37 +9,35 @@ import {
   Alert,
 } from "react-native";
 import Ionicons from "@react-native-vector-icons/ionicons";
-// 1. Import Convex hooks and your API
+import { useNavigation } from "@react-navigation/native";
 import { useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 
-export default function SignupScreen() {
-  // 2. Add State with Types
-  const [username, setUsername] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
+const SignupScreen = () => {
+  // 1. Initialize Navigation
+  const navigation = useNavigation();
 
-  // 3. Define the Convex Mutation hook
+  // 2. Setup State for Convex (Matches your new Schema)
+  const [fullname, setFullname] = useState("");
+  const [username, setUsername] = useState(""); // Email field in UI maps to username in your schema
+  const [password, setPassword] = useState("");
+
+  // 3. Convex Mutation Hook
   const registerUser = useMutation(api.users.register);
 
   const handleSignup = async () => {
-    if (!username || !password) {
+    if (!fullname || !username || !password) {
       Alert.alert("Error", "Please fill in all fields");
       return;
     }
 
     try {
-      const result = await registerUser({ username, password });
-      
-      // Based on your users.ts logic
-      if (typeof result === "object" && result.success === false) {
-        Alert.alert("Signup Failed", result.message);
-      } else {
-        Alert.alert("Success", "Account created!");
-        // Navigate to Login or Home here
-      }
+      await registerUser({ fullname, username, password });
+      Alert.alert("Success", "Account created! Please log in.");
+      navigation.navigate("Login" as never); // Navigate back to login
     } catch (error) {
       console.error(error);
-      Alert.alert("Error", "Something went wrong during signup");
+      Alert.alert("Signup Failed", "That username might already be taken.");
     }
   };
 
@@ -47,44 +45,144 @@ export default function SignupScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Image
-          source={require("../assets/signup.webp")}
-          style={styles.image}
+          source={require("./../assets/signup.webp")}
+          style={styles.illustration}
         />
       </View>
 
       <View style={styles.formContainer}>
+        {/* Full Name Input - Added for your Exam Requirement */}
         <Text style={styles.label}>Full Name</Text>
         <TextInput 
           style={styles.input} 
           placeholder="John Doe" 
-          value={username}
-          onChangeText={setUsername} // 4. Bind state
+          value={fullname}
+          onChangeText={setFullname}
+        />
+
+        <Text style={styles.label}>Email Address</Text>
+        <TextInput 
+          style={styles.input} 
+          placeholder="john@gmail.com" 
           autoCapitalize="none"
+          value={username}
+          onChangeText={setUsername}
         />
 
         <Text style={styles.label}>Password</Text>
-        <TextInput 
-          style={styles.input} 
-          placeholder="********"  
-          secureTextEntry  
+        <TextInput
+          style={styles.input}
+          secureTextEntry
+          placeholder="********"
           value={password}
-          onChangeText={setPassword} // 4. Bind state
+          onChangeText={setPassword}
         />
 
         <TouchableOpacity style={styles.loginButton} onPress={handleSignup}>
           <Text style={styles.loginButtonText}>Sign Up</Text>
         </TouchableOpacity>
 
-        {/* Rest of your UI... */}
+        <Text style={styles.orText}>Or</Text>
+
+        <View style={styles.socialRow}>
+          <TouchableOpacity style={styles.socialIcon}>
+            <Ionicons name="logo-google" size={30} color="#DB4437" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.socialIcon}>
+            <Ionicons name="logo-apple" size={30} color="black" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.socialIcon}>
+            <Ionicons name="logo-facebook" size={30} color="#4267B2" />
+          </TouchableOpacity>
+        </View>
+
         <View style={styles.footer}>
           <Text>Already have an account? </Text>
-          <TouchableOpacity>
+          {/* FIX: Added navigation.navigate here */}
+          <TouchableOpacity onPress={() => navigation.navigate("Login" as never)}>
             <Text style={styles.linkText}>Log In</Text>
           </TouchableOpacity>
         </View>
       </View>
     </View>
   );
-}
+};
 
-// ... your styles stay exactly the same
+// ... (Your styles remain exactly the same)
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#7D7AFF",
+    paddingTop: 40,
+  },
+  header: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  image: {
+    width: "60%",
+    height: "70%",
+  },
+  formContainer: {
+    flex: 3,
+    backgroundColor: "#FFF",
+    borderTopLeftRadius: 60,
+    borderTopRightRadius: 60,
+    padding: 30,
+  },
+  label: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 5,
+    marginTop: 15,
+  },
+  input: {
+    backgroundColor: "#F0F0F0",
+    padding: 15,
+    borderRadius: 15,
+    fontSize: 16,
+  },
+  loginButton: {
+    backgroundColor: "#FFCC00",
+    padding: 18,
+    borderRadius: 15,
+    alignItems: "center",
+    marginTop: 30,
+  },
+  loginButtonDisabled: {
+    opacity: 0.6,
+  },
+  loginButtonText: {
+    fontWeight: "bold",
+    fontSize: 18,
+  },
+  orText: {
+    textAlign: "center",
+    marginVertical: 20,
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  socialRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 20,
+  },
+  socialIcon: {
+    backgroundColor: "#F0F0F0",
+    padding: 15,
+    borderRadius: 15,
+  },
+  footer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 30,
+  },
+  linkText: {
+    color: "#FFCC00",
+    fontWeight: "bold",
+  },
+});
+
+export default SignupScreen;
