@@ -1,8 +1,27 @@
 import { mutation } from "./_generated/server";
+import bcrypt from "bcryptjs";
 
 export const seed = mutation({
   args: {},
   handler: async (ctx) => {
+    // 1. Create a Seed User first
+    // We check if they exist so we don't create duplicates
+    const existingUser = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("username"), "testuser"))
+      .unique();
+
+    let userId;
+    if (existingUser) {
+      userId = existingUser._id;
+    } else {
+      const hashedPassword = bcrypt.hashSync("password123", 10);
+      userId = await ctx.db.insert("users", {
+        username: "testuser",
+        password: hashedPassword,
+      });
+    }
+    
     const initialTasks = [
       "Buy groceries",
       "Finish React Native tutorial",
@@ -20,6 +39,7 @@ export const seed = mutation({
       await ctx.db.insert("todos", {
         text: taskText,
         isCompleted: Math.random() > 0.7, // Randomly mark some as completed
+        userId: userId
       });
     }
     
